@@ -1,0 +1,24 @@
+{
+  "name": "tracker",
+  "version": "1.0.0",
+  "description": "It is an location tracker app backend server",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nodejs",
+    "location",
+    "tracker"
+  ],
+  "author": "Vikram Singh",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "jsonwebtoken": "^7.4.1",
+    "mongoose": "^4.10.8",
+    "node-gcm": "^0.14.6",
+    "socket.io": "^2.0.3"
+  }
+}
