@@ -25,6 +25,7 @@ app.use(tockenChecker.verifyToken); // all routes after that require token
 app.post('/checkIfContactExist', user.contactExist);
 //Get all user
 app.get('/users', user.getAllUsers);
+app.post('/updatedeviceid', user.updateUserDeviceId);
 //Request contact location request
 app.post('/requestlocation', contact.requestContactForLocation);
 app.post('/getpendingcontacts', contact.getPendingContacts);
@@ -33,6 +34,7 @@ app.post('/getconnectedcontacts', contact.getConnectedContacts);
 app.post('/connect', contact.updateApproveToConnected);
 app.post('/addlocation', location.saveLocation);
 app.post('/getlocation', location.getLocation);
+app.post('/sharelocation', location.shareLocation);
 //for error handling
 app.use(function(req, res) {
      res.status(404).send('404 Page not found');

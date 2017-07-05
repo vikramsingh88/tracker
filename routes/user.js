@@ -36,6 +36,33 @@ module.exports.createNewUser = function(req, res) {
   });
 }
 
+//update user's device id
+module.exports.updateUserDeviceId = function(req, res) {
+  var userName = req.decoded._doc.userName;
+  var deviceId = req.body.deviceId;
+  User.findOneAndUpdate({'userName' : userName}, {'deviceId' : deviceId}, function(err, updated) {
+    if (err) {
+      var message="Internal server error";
+      res.status(500).send({'statusMessage' : 'error', 'message' : message,'data':null});
+    } else {
+      var message1 = "Device is updated";
+      res.status(200).send({'statusMessage' : 'success', 'message' : message1, 'data':null});
+    }
+  });
+}
+
+function updateDeviceId(userName, deviceId) {
+  User.findOneAndUpdate({'userName' : userName}, {'deviceId' : deviceId}, function(err, updated) {
+    if (err) {
+      var message="Internal server error";
+      console.log('updateDeviceId', message);
+    } else {
+      var message1 = "Device is updated";
+      console.log('updateDeviceId', message1);
+    }
+  });
+}
+
 //Check if user all ready exist
 module.exports.userExist = function(req, res) {
   console.log('In user exist method');
@@ -84,6 +111,7 @@ module.exports.contactExist = function(req, res) {
 module.exports.authenticate = function(req, res) {
   var userName = req.body.userName;
   var password = req.body.password;
+  var deviceId = req.body.deviceId;
   // find the user
   User.findOne({'userName': userName}, function(err, user) {
     if (err) throw err;
@@ -95,6 +123,8 @@ module.exports.authenticate = function(req, res) {
       if (user.password != password) {
         res.json({ 'statusMessage': 'error', message: 'Authentication failed. Wrong password.', 'data' :null });
       } else {
+        //update device id
+        updateDeviceId(userName, deviceId);
         // if user is found and password is right
         // create a token
         var token = jwt.sign(user, secret, {});

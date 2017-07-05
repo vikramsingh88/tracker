@@ -1,6 +1,13 @@
 var mongoose = require('mongoose');
 var db = require('../models/db.js');
+var gcm = require('node-gcm');
+
+var User = mongoose.model('User');
 var Location = mongoose.model('Location');
+
+var serverKey = "AAAAnFE10cY:APA91bEVBr5zQWjTavvQ-P006ZJoEriGuaW2ebHR5StVQRwJnGtLTDqeiTRfRDzUnLWBzl3S4b48PlhbR5VqpOLv-bTkmyFFzh-wBASCYb6kDRg0KFKcGQ3eIKNFtBxzt-fibEWDhPT5";
+// Set up the sender with your GCM/FCM API key (declare this once for multiple messages)
+var sender = new gcm.Sender(serverKey);
 
 module.exports.saveLocation = function(req, res) {
   var userName = req.decoded._doc.userName;
@@ -28,17 +35,60 @@ module.exports.saveLocation = function(req, res) {
 
 module.exports.getLocation = function(req, res) {
   var contact = req.body.contact;
-  Location.find({'contact' : contact},{'latlon':true}, function(err, locations) {
+  Location.findOne({'contact' : contact},{'latlon':true}, { sort: { 'timeStamp' : -1 } }, function(err, location) {
     if (err) {
       var message="Internal server error";
       res.status(500).send({'statusMessage' : 'error', 'message' : message,'data':null});
     }
-    if(locations == null || locations.length == 0) {
+    if(location == null || location.length == 0) {
       var message = "Location not available";
-      res.status(200).send({'statusMessage' : 'error', 'message' : message, 'data':locations});
+      res.status(200).send({'statusMessage' : 'error', 'message' : message, 'data':location});
     } else {
+      console.log(location);
       var message = "Location available";
+      var locations = [];
+      locations.push(location);
       res.status(200).send({'statusMessage' : 'success', 'message' : message, 'data':locations});
     }
+  });
+}
+
+//share location
+module.exports.shareLocation = function(req, res) {
+  var userContact = req.decoded._doc.contact;
+  var contact = req.body.contact;
+  var location = req.body.location;
+
+  User.findOne({'contact' :contact},{'deviceId':true}, function (err, deviceId) {
+    var message;
+    if (err) {
+      message="Internal server error";
+      res.status(500).send({'statusMessage' : 'error', 'message' : message, 'data':null});
+    } else {
+        sendNotification(deviceId.deviceId, userContact+" shared his location", location, function(status, message) {
+          res.status(status).send({'statusMessage' : 'success', 'message' : message, 'data':null});
+        });
+    }
+  });
+}
+
+//send notification
+function sendNotification(deviceId, title, location, callback) {
+  // Prepare a message to be sent
+  var message = new gcm.Message({
+      data: { 'text' : location, 'title':title, 'share' :true }
+  });
+  // Specify which registration IDs to deliver the message to
+  var regTokens = [];
+  regTokens.push(deviceId);
+  // Actually send the message
+  sender.send(message, { registrationTokens: regTokens }, function (err, response) {
+      if (err) {
+        console.log("Error -", err);
+        callback(500, "error while sharing location");
+      } else {
+        console.log("Response -",response);
+        callback(200, "location shared");
+      }
   });
 }
