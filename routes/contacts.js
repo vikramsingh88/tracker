@@ -28,13 +28,13 @@ module.exports.requestContactForLocation = function(req, res) {
   newContact.connected = '';
   newContact.pending = '';
 
-  Contact.findOne({'pending' :contact}, function (err, contacts) {
+  Contact.findOne({'userContact': userContact, 'pending' :contact}, function (err, contacts) {
     if (err) {
       var message = "Internal server error";
       res.status(500).send({'statusMessage' : 'error', 'message' : message,'data':null});
     } else {
       if (contacts == null) {
-        Contact.findOne({'connected' :contact}, function (err, contacts) {
+        Contact.findOne({'userContact': userContact, 'connected' :contact}, function (err, contacts) {
           if (err) {
             var message = "Internal server error";
             res.status(500).send({'statusMessage' : 'error', 'message' : message,'data':null});
