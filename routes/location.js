@@ -4,6 +4,7 @@ var gcm = require('node-gcm');
 
 var User = mongoose.model('User');
 var Location = mongoose.model('Location');
+var LocationVisibility = mongoose.model('LocationVisibility');
 
 var serverKey = "AAAAnFE10cY:APA91bEVBr5zQWjTavvQ-P006ZJoEriGuaW2ebHR5StVQRwJnGtLTDqeiTRfRDzUnLWBzl3S4b48PlhbR5VqpOLv-bTkmyFFzh-wBASCYb6kDRg0KFKcGQ3eIKNFtBxzt-fibEWDhPT5";
 // Set up the sender with your GCM/FCM API key (declare this once for multiple messages)
@@ -90,5 +91,59 @@ function sendNotification(deviceId, title, location, callback) {
         console.log("Response -",response);
         callback(200, "location shared");
       }
+  });
+}
+
+//hide location
+module.exports.hideLocation = function(req, res) {
+  var userName = req.decoded._doc.userName;
+  var userContact = req.decoded._doc.contact;
+  var visibility = req.body.visibility;
+
+  LocationVisibility.findOneAndUpdate({'userName':userName, 'userContact' : userContact}, {'visibility' : visibility}, {upsert:true}, function(err, doc){
+      var message="Internal server error";
+      if (err) {
+        return res.status(500).send({'statusMessage' : 'error', 'message' : message, 'data':null});
+      }
+      message = "Record updated successfully"
+      return res.status(200).send({'statusMessage' : 'success', 'message' : message, 'data':null});
+  });
+}
+
+//Get location visibility
+module.exports.getLocationVisibility = function(req, res) {
+  var userContact = req.body.contact;
+
+  LocationVisibility.findOne({'userContact' :userContact},{'visibility':true}, function (err, visibility) {
+    var message;
+    if (err) {
+      message="Internal server error";
+      res.status(500).send({'statusMessage' : 'error', 'message' : message, 'data':null});
+    } else {
+        message="Location visibility available";
+        res.status(status).send({'statusMessage' : 'success', 'message' : message, 'data': visibility.visibility});
+    }
+  });
+}
+
+//check if location is hidden
+module.exports.isLocationHidden = function(req, res, next) {
+  var contact = req.body.contact;
+  LocationVisibility.findOne({'userContact' : contact}, function(err, visibility) {
+    if (err) {
+      var message="Internal server error";
+      return res.status(500).send({'statusMessage' : 'error', 'message' : message,'data':null});
+    }
+    if(visibility == null) {
+      next();
+      return;
+    }
+    if(visibility.visibility == "close") {
+      var message = "User location is hidden";
+      res.status(200).send({'statusMessage' : 'error', 'message' : message, 'data':null});
+    }
+    if(visibility.visibility == "open") {
+      next();
+    }
   });
 }

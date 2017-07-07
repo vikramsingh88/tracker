@@ -50,3 +50,11 @@ var locationSchema = new mongoose.Schema({
 });
 //Build location model
 mongoose.model('Location', locationSchema);
+
+//Hide location
+var hideLocationSchema = new mongoose.Schema({
+	userName : {type: String},
+	userContact : {type: String},
+	visibility : {type: String}
+});
+mongoose.model('LocationVisibility', hideLocationSchema);
