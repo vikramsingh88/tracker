@@ -56,17 +56,18 @@ module.exports.getLocation = function(req, res) {
 
 module.exports.getLocations = function(req, res) {
   var contact = req.body.contact;
-  Location.find({'contact' : contact}, { sort: { 'timeStamp' : -1 } }, function(err, locations) {
+  Location.find({'contact' : contact}, {}, { sort: { 'timeStamp' : -1 } }, function(err, locations) {
     if (err) {
       var message="Internal server error";
-      res.status(500).send({'statusMessage' : 'error', 'message' : message,'data':null});
+      console.log(err);
+      return res.status(500).send({'statusMessage' : 'error', 'message' : message,'data':null});
     }
     if(locations == null || locations.length == 0) {
       var message = "Location not available";
-      res.status(200).send({'statusMessage' : 'error', 'message' : message, 'data':locations});
+      return res.status(200).send({'statusMessage' : 'error', 'message' : message, 'data':locations});
     } else {
       var message = "Location available";
-      res.status(200).send({'statusMessage' : 'success', 'message' : message, 'data':locations});
+      return res.status(200).send({'statusMessage' : 'success', 'message' : message, 'data':locations});
     }
   });
 }
