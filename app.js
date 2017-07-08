@@ -37,6 +37,7 @@ app.post('/getlocation', location.isLocationHidden, location.getLocation);
 app.post('/sharelocation', location.shareLocation);
 app.post('/hidelocation', location.hideLocation);
 app.post('/getlocationvisibility', location.getLocationVisibility);
+app.post('/getlocations', location.isLocationHidden, location.getLocations);
 //for error handling
 app.use(function(req, res) {
      res.status(404).send('404 Page not found');
