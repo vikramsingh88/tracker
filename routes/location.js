@@ -56,7 +56,7 @@ module.exports.getLocation = function(req, res) {
 
 module.exports.getLocations = function(req, res) {
   var contact = req.body.contact;
-  Location.find({'contact' : contact}, function(err, locations) {
+  Location.find({'contact' : contact}, { sort: { 'timeStamp' : -1 } }, function(err, locations) {
     if (err) {
       var message="Internal server error";
       res.status(500).send({'statusMessage' : 'error', 'message' : message,'data':null});
